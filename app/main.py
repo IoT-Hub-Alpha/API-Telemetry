@@ -9,13 +9,26 @@ from .services.schemas import TelemetryResponse
 from fastapi_pagination.links import Page
 from fastapi_pagination import add_pagination
 from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
 add_pagination(app)
 
-@app.get("/", response_model=Page[TelemetryResponse])
-def get_telemetry(device: str | None = None, after: datetime | None = None, before: datetime | None = None, db: Session = Depends(get_db)):
+# allow everyone, since its dev, why the hell not, right???
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("v1/telemetry/ready")
+async def ready():
+    return {"status": "ready"}
+
+@app.get("v1/telemetry/", response_model=Page[TelemetryResponse])
+async def get_telemetry(device: str | None = None, after: datetime | None = None, before: datetime | None = None, db: Session = Depends(get_db)):
     qs = db.query(Telemetry)
     
     if device:
@@ -35,7 +48,7 @@ def get_telemetry(device: str | None = None, after: datetime | None = None, befo
         
     return paginate(qs)
 
-@app.get("/aggregates")
+@app.get("v1/telemetry/aggregates")
 async def get_aggregates(request: Request):
     url = os.getenv("SCALA_URL", "http://scala-aggregation-service:8081/agg")
     

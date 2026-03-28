@@ -5,7 +5,7 @@ from typing import Any
 
 class TelemetryResponse(BaseModel):
     id: int
-    device: int
+    device: str
     timestamp: datetime
     payload: dict[str, Any]
 

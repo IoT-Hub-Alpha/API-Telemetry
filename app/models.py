@@ -1,9 +1,12 @@
 from datetime import datetime
 from typing import Any
-
 from sqlalchemy import Index, DateTime
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Telemetry(Base):
