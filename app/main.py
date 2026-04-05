@@ -34,34 +34,44 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/v1/telemetry/health")
 async def ready():
     return {"health": "ok"}
 
+
 @app.get("/v1/telemetry", response_model=Page[TelemetryResponse])
-async def get_telemetry(device: str | None = None, after: datetime | None = None, before: datetime | None = None, db: Session = Depends(get_db), auth: JWTPayload = Depends(require_permissions("telemetry.view"))):
+async def get_telemetry(
+    device: str | None = None,
+    after: datetime | None = None,
+    before: datetime | None = None,
+    db: Session = Depends(get_db),
+    auth: JWTPayload = Depends(require_permissions("telemetry.view")),
+):
     qs = db.query(Telemetry)
-    
+
     if device:
         qs = qs.filter(
-            Telemetry.device==device,
-            )
-    
+            Telemetry.device == device,
+        )
+
     if after:
-        qs = qs.filter(
-            Telemetry.timestamp > after
-        )
-        
+        qs = qs.filter(Telemetry.timestamp > after)
+
     if before:
-        qs = qs.filter(
-            Telemetry.timestamp < before
-        )
-        
-    logging.info("fetching telemetry...", extra={"device": device, "after": after, "before": before})
+        qs = qs.filter(Telemetry.timestamp < before)
+
+    logging.info(
+        "fetching telemetry...",
+        extra={"device": device, "after": after, "before": before},
+    )
     return paginate(qs)
 
+
 @app.get("/v1/telemetry/aggregates")
-async def get_aggregates(request: Request, auth: JWTPayload = Depends(require_permissions("telemetry.view"))):
+async def get_aggregates(
+    request: Request, auth: JWTPayload = Depends(require_permissions("telemetry.view"))
+):
     url = os.getenv("SCALA_URL", "http://scala-aggregation-service:8081/agg")
     logging.info("forwarding request to scala...")
     try:
@@ -80,7 +90,7 @@ async def get_aggregates(request: Request, auth: JWTPayload = Depends(require_pe
         logging.info("HTTPStatusError", extra={"error": repr(exc), "code": 502})
         raise HTTPException(
             status_code=502,
-            detail=f"Scala returned {exc.response.status_code}: {exc.response.text}"
+            detail=f"Scala returned {exc.response.status_code}: {exc.response.text}",
         )
     except httpx.RequestError as exc:
         logging.info("RequestError", extra={"error": repr(exc), "code": 502})

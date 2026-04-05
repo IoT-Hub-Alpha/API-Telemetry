@@ -9,6 +9,4 @@ class TelemetryResponse(BaseModel):
     timestamp: datetime
     payload: dict[str, Any]
 
-    model_config = {
-        "from_attributes": True
-    }
+    model_config = {"from_attributes": True}

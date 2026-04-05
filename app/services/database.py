@@ -11,7 +11,9 @@ DB_HOST = os.getenv("TELEMETRY_DB_HOST")
 DB_PORT = int(os.getenv("TELEMETRY_DB_PORT", 5432))
 DB_CONNECT_TIMEOUT = int(os.getenv("TELEMETRY_DB_CONNECT_TIMEOUT", 10))
 
-DATABASE_URL = f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+DATABASE_URL = (
+    f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+)
 
 
 class Base(DeclarativeBase):
@@ -25,6 +27,7 @@ SessionLocal = sessionmaker(
     autoflush=False,
     autocommit=False,
 )
+
 
 def get_db():
     db = SessionLocal()
