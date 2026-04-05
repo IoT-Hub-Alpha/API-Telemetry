@@ -11,6 +11,8 @@ from fastapi_pagination import add_pagination
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi.middleware.cors import CORSMiddleware
 from iot_logging import FastAPIRequestContextMiddleware, StructuredJsonFormatter
+from iot_auth.fastapi import require_permissions
+from iot_auth.types import JWTPayload
 import logging
 
 app = FastAPI()
@@ -32,12 +34,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("v1/telemetry/ready")
+@app.get("/v1/telemetry/health")
 async def ready():
-    return {"status": "ready"}
+    return {"health": "ok"}
 
-@app.get("v1/telemetry/", response_model=Page[TelemetryResponse])
-async def get_telemetry(device: str | None = None, after: datetime | None = None, before: datetime | None = None, db: Session = Depends(get_db)):
+@app.get("/v1/telemetry", response_model=Page[TelemetryResponse])
+async def get_telemetry(device: str | None = None, after: datetime | None = None, before: datetime | None = None, db: Session = Depends(get_db), auth: JWTPayload = Depends(require_permissions("telemetry.view"))):
     qs = db.query(Telemetry)
     
     if device:
@@ -58,8 +60,8 @@ async def get_telemetry(device: str | None = None, after: datetime | None = None
     logging.info("fetching telemetry...", extra={"device": device, "after": after, "before": before})
     return paginate(qs)
 
-@app.get("v1/telemetry/aggregates")
-async def get_aggregates(request: Request):
+@app.get("/v1/telemetry/aggregates")
+async def get_aggregates(request: Request, auth: JWTPayload = Depends(require_permissions("telemetry.view"))):
     url = os.getenv("SCALA_URL", "http://scala-aggregation-service:8081/agg")
     logging.info("forwarding request to scala...")
     try:
