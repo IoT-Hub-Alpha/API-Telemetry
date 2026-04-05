@@ -71,17 +71,17 @@ async def get_aggregates(request: Request, auth: JWTPayload = Depends(require_pe
             return response.json()
 
     except httpx.ConnectError as exc:
-        logging.info("HTTPException", extra={"error": repr(exec), "code": 502})
+        logging.info("HTTPException", extra={"error": repr(exc), "code": 502})
         raise HTTPException(status_code=502, detail=f"Connect error: {repr(exc)}")
     except httpx.ReadTimeout as exc:
-        logging.info("ReadTimeout", extra={"error": repr(exec), "code": 502})
+        logging.info("ReadTimeout", extra={"error": repr(exc), "code": 502})
         raise HTTPException(status_code=502, detail=f"Timeout: {repr(exc)}")
     except httpx.HTTPStatusError as exc:
-        logging.info("HTTPStatusError", extra={"error": repr(exec), "code": 502})
+        logging.info("HTTPStatusError", extra={"error": repr(exc), "code": 502})
         raise HTTPException(
             status_code=502,
             detail=f"Scala returned {exc.response.status_code}: {exc.response.text}"
         )
     except httpx.RequestError as exc:
-        logging.info("RequestError", extra={"error": repr(exec), "code": 502})
+        logging.info("RequestError", extra={"error": repr(exc), "code": 502})
         raise HTTPException(status_code=502, detail=f"Request error: {repr(exc)}")
